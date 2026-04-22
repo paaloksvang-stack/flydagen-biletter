@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Kjeller Flydagen 2026 — Billetter</title>
+<meta name="description" content="Kjøp billetter og magasin til Kjeller Flydagen søndag 7. juni 2026">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flydagen">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -437,6 +444,39 @@
     margin-top: 10px;
   }
 
+  .form-field {
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(200,218,245,0.5);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus {
+    border-color: rgba(245,166,35,0.6);
+  }
+  .form-input::placeholder {
+    color: rgba(200,218,245,0.25);
+  }
+
   .vipps-btn {
     width: 100%;
     padding: 18px;
@@ -607,14 +647,37 @@
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <span class="modal-icon">🎟️</span>
-    <h2>BESTILLING MOTTATT!</h2>
-    <p>Takk for din bestilling til Kjeller Flydagen 2026. Billetter sendes til din e-post.</p>
+    <h2>NESTEN FERDIG!</h2>
+    <p>Fyll inn kontaktinfo så vi kan sende deg bekreftelse.</p>
     <div class="ticket-summary" id="modal-summary"></div>
-    <a id="vipps-link" href="#" class="vipps-btn" onclick="openVipps(event)">
-      <span class="vipps-logo">vipps</span>
-      <span id="vipps-btn-label">Betal med Vipps</span>
-    </a>
-    <div class="vipps-note">Vipps #82820 · Veteranflygruppa NRF<br>Åpner Vipps-appen automatisk på mobil</div>
+
+    <div id="contact-form">
+      <div class="form-field">
+        <label class="form-label">Fullt navn *</label>
+        <input type="text" id="buyer-name" class="form-input" placeholder="Ola Nordmann" autocomplete="name">
+      </div>
+      <div class="form-field">
+        <label class="form-label">E-postadresse *</label>
+        <input type="email" id="buyer-email" class="form-input" placeholder="ola@eksempel.no" autocomplete="email">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Telefon (valgfritt)</label>
+        <input type="tel" id="buyer-phone" class="form-input" placeholder="+47 000 00 000" autocomplete="tel">
+      </div>
+      <div id="form-error" style="color:#e74c3c;font-size:13px;margin-bottom:10px;display:none;">Vennligst fyll inn navn og e-post.</div>
+      <a id="vipps-link" href="#" class="vipps-btn" onclick="openVipps(event)">
+        <span class="vipps-logo">vipps</span>
+        <span id="vipps-btn-label">Betal med Vipps</span>
+      </a>
+      <div class="vipps-note">Vipps #82820 · Veteranflygruppa NRF<br>Åpner Vipps-appen automatisk på mobil</div>
+    </div>
+
+    <div id="confirm-view" style="display:none;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">✅</div>
+      <div style="font-size:17px;font-weight:600;color:#2ecc71;margin-bottom:8px;">Betaling startet!</div>
+      <div style="font-size:14px;color:rgba(200,218,245,0.65);line-height:1.6;margin-bottom:20px;">Fullfør betalingen i Vipps.<br>Vi sees på Kjeller 7. juni! ✈️</div>
+    </div>
+
     <button class="modal-close" onclick="closeModal()">← Gå tilbake</button>
   </div>
 </div>
@@ -706,10 +769,37 @@
   function openVipps(e) {
     e.preventDefault();
     if (currentTotal === 0) return;
-    const msg = encodeURIComponent('Kjeller Flydagen 2026');
-    // Vipps deep link (opens app on mobile)
+
+    const name = document.getElementById('buyer-name').value.trim();
+    const email = document.getElementById('buyer-email').value.trim();
+    const errEl = document.getElementById('form-error');
+
+    if (!name || !email || !email.includes('@')) {
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    // Save order locally for admin reference
+    const phone = document.getElementById('buyer-phone').value.trim();
+    const order = {
+      name, email, phone,
+      adults: state.adult,
+      children: state.child,
+      magazines: magEnabled() ? state.mag : 0,
+      total: currentTotal,
+      time: new Date().toISOString()
+    };
+    const orders = JSON.parse(localStorage.getItem('flydagen_orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('flydagen_orders', JSON.stringify(orders));
+
+    // Show confirm view
+    document.getElementById('contact-form').style.display = 'none';
+    document.getElementById('confirm-view').style.display = 'block';
+
+    const msg = encodeURIComponent(`Kjeller Flydagen 2026 - ${name}`);
     const deepLink = `vipps://payment?receiver=82820&amount=${currentTotal * 100}&message=${msg}`;
-    // QR/web fallback
     const fallback = `https://qr.vipps.no/28/2/05/031/82820?v=1&amount=${currentTotal * 100}&message=${msg}`;
     window.location.href = deepLink;
     setTimeout(() => { window.open(fallback, '_blank'); }, 1500);
@@ -717,6 +807,18 @@
 
   function closeModal() {
     document.getElementById('modal').classList.remove('active');
+    setTimeout(() => {
+      document.getElementById('contact-form').style.display = 'block';
+      document.getElementById('confirm-view').style.display = 'none';
+      document.getElementById('form-error').style.display = 'none';
+    }, 400);
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
   }
 </script>
 </body>
