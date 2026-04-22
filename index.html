@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kjeller Flydagen 2026 — Billetter</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #0a1628;
+    --sky-mid: #112244;
+    --horizon: #1a3a6b;
+    --cloud: #c8daf5;
+    --white: #f0f6ff;
+    --gold: #f5a623;
+    --gold-dark: #c8841a;
+    --accent: #e8f4ff;
+    --green: #2ecc71;
+    --red: #e74c3c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sky);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Sky background with stars */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(26,58,107,0.6) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 10%, rgba(17,34,68,0.8) 0%, transparent 50%),
+      linear-gradient(180deg, #060d1a 0%, #0a1628 40%, #112244 80%, #1a2a4a 100%);
+    z-index: -2;
+  }
+
+  /* Stars */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+  @keyframes twinkle {
+    from { opacity: var(--min-op); transform: scale(1); }
+    to { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 48px 20px 32px;
+    position: relative;
+  }
+
+  .plane-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+    animation: fly 3s ease-in-out infinite;
+  }
+  @keyframes fly {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+  }
+
+  .event-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 14vw, 88px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: var(--white);
+    text-shadow: 0 0 60px rgba(245,166,35,0.3);
+    margin-bottom: 6px;
+  }
+
+  h1 span {
+    color: var(--gold);
+  }
+
+  .date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,166,35,0.15);
+    border: 1px solid rgba(245,166,35,0.4);
+    border-radius: 100px;
+    padding: 8px 20px;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  /* Main content */
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+  }
+
+  /* Section divider */
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(200,218,245,0.5);
+    margin: 32px 0 14px;
+  }
+
+  /* Age selector */
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(245,166,35,0.3);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .card-sub {
+    font-size: 13px;
+    color: rgba(200,218,245,0.6);
+    margin-top: 2px;
+  }
+
+  .price-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  .price-free {
+    color: var(--green);
+  }
+
+  /* Counter */
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(0,0,0,0.3);
+    border-radius: 14px;
+    overflow: hidden;
+    width: fit-content;
+  }
+
+  .counter-btn {
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .counter-btn:active {
+    background: rgba(245,166,35,0.2);
+  }
+  .counter-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .counter-val {
+    min-width: 40px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  /* Toggle switch for magazine */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .toggle {
+    position: relative;
+    width: 52px;
+    height: 30px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    transition: background 0.25s;
+  }
+
+  .toggle input:checked + .toggle-track {
+    background: var(--gold);
+  }
+
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .toggle input:checked ~ .toggle-thumb {
+    transform: translateX(22px);
+  }
+
+  /* Summary */
+  .summary-card {
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.25);
+    border-radius: 20px;
+    padding: 24px;
+    margin-top: 8px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .summary-row:last-of-type {
+    border-bottom: none;
+  }
+
+  .summary-label { color: rgba(200,218,245,0.7); }
+  .summary-value { font-weight: 600; color: var(--white); }
+
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(245,166,35,0.3);
+  }
+
+  .total-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(200,218,245,0.6);
+  }
+
+  .total-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* CTA */
+  .cta-btn {
+    width: 100%;
+    padding: 18px;
+    margin-top: 20px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 30px rgba(245,166,35,0.35);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cta-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 15px rgba(245,166,35,0.25);
+  }
+  .cta-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    transform: none;
+  }
+
+  /* Free badge */
+  .free-badge {
+    display: inline-block;
+    background: rgba(46,204,113,0.15);
+    border: 1px solid rgba(46,204,113,0.4);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 1px;
+  }
+
+  /* Confirmation modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6,13,26,0.92);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: linear-gradient(145deg, #112244, #0a1628);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 24px;
+    padding: 36px 28px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+  .modal-overlay.active .modal {
+    transform: translateY(0);
+  }
+
+  .modal-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .modal p {
+    font-size: 15px;
+    color: rgba(200,218,245,0.7);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .ticket-summary {
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 2;
+    text-align: left;
+  }
+
+  .modal-close {
+    width: 100%;
+    padding: 16px;
+    background: rgba(245,166,35,0.15);
+    border: 1px solid rgba(245,166,35,0.4);
+    color: var(--gold);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    margin-top: 10px;
+  }
+
+  .vipps-btn {
+    width: 100%;
+    padding: 18px;
+    background: #FF5B24;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(255,91,36,0.45);
+    transition: transform 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+  }
+  .vipps-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 4px 15px rgba(255,91,36,0.3);
+  }
+
+  .vipps-logo {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    font-style: italic;
+  }
+
+  .vipps-note {
+    font-size: 12px;
+    color: rgba(200,218,245,0.45);
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* Empty state */
+  .empty-note {
+    text-align: center;
+    color: rgba(200,218,245,0.35);
+    font-size: 14px;
+    padding: 12px 0;
+  }
+
+  /* Info row */
+  .info-pill {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: rgba(200,218,245,0.5);
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .info-pill span:first-child { flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- Header -->
+<div class="header">
+  <span class="plane-icon">✈️</span>
+  <div class="event-label">Kjeller Flyplass • Lillestrøm</div>
+  <h1>KJELLER<br><span>FLY</span>DAGEN</h1>
+  <div class="date-badge">📅 Søndag 7. juni 2026</div>
+</div>
+
+<div class="container">
+
+  <!-- Info pills -->
+  <div class="info-pill"><span>🕙</span><span>Portene åpner kl. 10:00 — Siste inngang kl. 17:00</span></div>
+  <div class="info-pill"><span>👶</span><span>Barn under 18 år: Gratis inngang</span></div>
+  <div class="info-pill"><span>📖</span><span>Flydagsmagasin kan kjøpes som tillegg</span></div>
+  <div class="info-pill" style="border-color:rgba(245,166,35,0.25);background:rgba(245,166,35,0.06);"><span>⚠️</span><span style="color:rgba(200,218,245,0.65);">Alle flygende innslag er avhengig av teknisk tilstand på flyene, tilgjengelige piloter samt aktuelt vær og vind under arrangementet.</span></div>
+
+  <!-- Voksne -->
+  <div class="section-title">Billetter — Voksne (18+)</div>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Inngang voksen</div>
+        <div class="card-sub">Gjelder én person, 18 år eller eldre</div>
+      </div>
+      <div class="price-tag">100,-</div>
+    </div>
+    <div class="counter">
+      <button class="counter-btn" id="adult-minus" onclick="change('adult',-1)" disabled>−</button>
+      <div class="counter-val" id="adult-count">0</div>
+      <button class="counter-btn" onclick="change('adult',1)">+</button>
+    </div>
+  </div>
+
+  <!-- Barn -->
+  <div class="section-title">Billetter — Barn (under 18 år)</div>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Inngang barn</div>
+        <div class="card-sub">Gratis for alle under 18 år</div>
+      </div>
+      <div class="price-tag price-free">GRATIS</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="counter">
+        <button class="counter-btn" id="child-minus" onclick="change('child',-1)" disabled>−</button>
+        <div class="counter-val" id="child-count">0</div>
+        <button class="counter-btn" onclick="change('child',1)">+</button>
+      </div>
+      <span class="free-badge">GRATIS</span>
+    </div>
+  </div>
+
+  <!-- Magasin -->
+  <div class="section-title">Tillegg</div>
+  <div class="card">
+    <div class="toggle-row">
+      <div>
+        <div class="card-title">📖 Flydagsmagasin 2026</div>
+        <div class="card-sub">Eksklusiv utgave — begrenset opplag</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="mag-toggle" onchange="updateSummary()">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(200,218,245,0.5);">Pris per stk.</span>
+      <span class="price-tag" style="font-size:22px;">100,-</span>
+    </div>
+    <!-- Mag quantity (shown when toggled) -->
+    <div id="mag-qty-row" style="display:none;margin-top:14px;align-items:center;gap:10px;">
+      <span style="font-size:13px;color:rgba(200,218,245,0.6);">Antall:</span>
+      <div class="counter">
+        <button class="counter-btn" id="mag-minus" onclick="change('mag',-1)" disabled>−</button>
+        <div class="counter-val" id="mag-count">1</div>
+        <button class="counter-btn" onclick="change('mag',1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section-title">Oppsummering</div>
+  <div id="empty-note" class="empty-note">Velg billetter ovenfor</div>
+  <div class="summary-card" id="summary-card" style="display:none;">
+    <div id="summary-rows"></div>
+    <div class="summary-total">
+      <div class="total-label">Totalt</div>
+      <div class="total-amount" id="total-amount">0 kr</div>
+    </div>
+  </div>
+
+  <button class="cta-btn" id="buy-btn" onclick="openModal()" disabled>
+    Gå til betaling →
+  </button>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <span class="modal-icon">🎟️</span>
+    <h2>BESTILLING MOTTATT!</h2>
+    <p>Takk for din bestilling til Kjeller Flydagen 2026. Billetter sendes til din e-post.</p>
+    <div class="ticket-summary" id="modal-summary"></div>
+    <a id="vipps-link" href="#" class="vipps-btn" onclick="openVipps(event)">
+      <span class="vipps-logo">vipps</span>
+      <span id="vipps-btn-label">Betal med Vipps</span>
+    </a>
+    <div class="vipps-note">Vipps #82820 · Veteranflygruppa NRF<br>Åpner Vipps-appen automatisk på mobil</div>
+    <button class="modal-close" onclick="closeModal()">← Gå tilbake</button>
+  </div>
+</div>
+
+<script>
+  // Generate stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      top:${Math.random()*60}%;
+      left:${Math.random()*100}%;
+      --dur:${2 + Math.random()*3}s;
+      --min-op:${0.1 + Math.random()*0.4};
+      animation-delay:${Math.random()*3}s;
+    `;
+    starsEl.appendChild(s);
+  }
+
+  // State
+  const state = { adult: 0, child: 0, mag: 1 };
+  const magEnabled = () => document.getElementById('mag-toggle').checked;
+
+  function change(type, delta) {
+    if (type === 'mag') {
+      state.mag = Math.max(1, state.mag + delta);
+    } else {
+      state[type] = Math.max(0, state[type] + delta);
+    }
+    document.getElementById(type+'-count').textContent = state[type];
+    document.getElementById(type+'-minus').disabled = (type === 'mag' ? state.mag <= 1 : state[type] <= 0);
+    updateSummary();
+  }
+
+  document.getElementById('mag-toggle').addEventListener('change', function() {
+    const row = document.getElementById('mag-qty-row');
+    row.style.display = this.checked ? 'flex' : 'none';
+    updateSummary();
+  });
+
+  function updateSummary() {
+    const adultTotal = state.adult * 100;
+    const magTotal = magEnabled() ? state.mag * 100 : 0;
+    const total = adultTotal + magTotal;
+
+    const hasItems = state.adult > 0 || state.child > 0 || magEnabled();
+    document.getElementById('empty-note').style.display = hasItems ? 'none' : 'block';
+    document.getElementById('summary-card').style.display = hasItems ? 'block' : 'none';
+    document.getElementById('buy-btn').disabled = (state.adult === 0 && state.child === 0) || (!magEnabled() && state.adult === 0 && state.child === 0);
+
+    let rows = '';
+    if (state.adult > 0) {
+      rows += `<div class="summary-row"><span class="summary-label">Voksen × ${state.adult}</span><span class="summary-value">${adultTotal} kr</span></div>`;
+    }
+    if (state.child > 0) {
+      rows += `<div class="summary-row"><span class="summary-label">Barn × ${state.child}</span><span class="summary-value" style="color:var(--green)">Gratis</span></div>`;
+    }
+    if (magEnabled()) {
+      rows += `<div class="summary-row"><span class="summary-label">Magasin × ${state.mag}</span><span class="summary-value">${magTotal} kr</span></div>`;
+    }
+    document.getElementById('summary-rows').innerHTML = rows;
+    document.getElementById('total-amount').textContent = total + ' kr';
+
+    // Enable buy if anything is selected
+    document.getElementById('buy-btn').disabled = !hasItems || (state.adult === 0 && state.child === 0);
+  }
+
+  let currentTotal = 0;
+
+  function openModal() {
+    const adultTotal = state.adult * 100;
+    const magTotal = magEnabled() ? state.mag * 100 : 0;
+    currentTotal = adultTotal + magTotal;
+
+    let lines = '';
+    if (state.adult > 0) lines += `✅ ${state.adult} × Voksenbillett — ${state.adult*100} kr\n`;
+    if (state.child > 0) lines += `✅ ${state.child} × Barnebillett — Gratis\n`;
+    if (magEnabled()) lines += `📖 ${state.mag} × Flydagsmagasin — ${magTotal} kr\n`;
+    lines += `\n📅 Søndag 7. juni 2026\n📍 Kjeller Flyplass`;
+
+    document.getElementById('modal-summary').innerHTML = lines.replace(/\n/g, '<br>');
+    document.getElementById('vipps-btn-label').textContent = `Betal ${currentTotal} kr med Vipps`;
+    document.getElementById('modal').classList.add('active');
+  }
+
+  function openVipps(e) {
+    e.preventDefault();
+    if (currentTotal === 0) return;
+    const msg = encodeURIComponent('Kjeller Flydagen 2026');
+    // Vipps deep link (opens app on mobile)
+    const deepLink = `vipps://payment?receiver=82820&amount=${currentTotal * 100}&message=${msg}`;
+    // QR/web fallback
+    const fallback = `https://qr.vipps.no/28/2/05/031/82820?v=1&amount=${currentTotal * 100}&message=${msg}`;
+    window.location.href = deepLink;
+    setTimeout(() => { window.open(fallback, '_blank'); }, 1500);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+  }
+</script>
+</body>
+</html>
